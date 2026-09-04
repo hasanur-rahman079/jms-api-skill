@@ -12,6 +12,14 @@
     }
   ],
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Token",
+        "description": "API token for authenticated endpoints. Create tokens in your account settings. All GET endpoints are public; POST/PUT/DELETE require authentication."
+      }
+    },
     "schemas": {},
     "parameters": {}
   },
