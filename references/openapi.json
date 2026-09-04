@@ -2,8 +2,2034 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Journal Management System API",
-    "version": "0.0.0-placeholder",
-    "description": "Placeholder spec — this file is overwritten automatically by jms-saas-publisher's publish-openapi.yml workflow on every merge to its main branch. See references/meta.json for sync status."
+    "version": "1.5.3",
+    "description": "A professional RESTful API for the Journal Management System SaaS platform. All journal content endpoints are scoped by journal slug: `/api/v1/journals/{journalSlug}/...`. The publications list endpoint supports a `country` filter that matches any author affiliation country (not just the corresponding author), consistent with MDPI-style multi-country attribution."
   },
-  "paths": {}
+  "servers": [
+    {
+      "url": "http://localhost:3000/api/v1",
+      "description": "Primary server"
+    }
+  ],
+  "components": {
+    "schemas": {},
+    "parameters": {}
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Health check",
+        "description": "Check API health status, application version, and database migration state.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        },
+                        "db": {
+                          "type": "object",
+                          "properties": {
+                            "connected": {
+                              "type": "boolean"
+                            },
+                            "migrationsApplied": {
+                              "type": "number"
+                            },
+                            "migrationsPending": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "connected",
+                            "migrationsApplied",
+                            "migrationsPending"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "timestamp",
+                        "version",
+                        "db"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/journals": {
+      "get": {
+        "tags": [
+          "Journals"
+        ],
+        "summary": "List journals",
+        "description": "Get all active journals for this publisher with enriched information.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "List of active journals"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/volumes": {
+      "get": {
+        "tags": [
+          "Volumes"
+        ],
+        "summary": "List volumes",
+        "description": "Get all volumes for a journal, ordered by year descending.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "List of volumes"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/volumes/{volumeNumber}": {
+      "get": {
+        "tags": [
+          "Volumes"
+        ],
+        "summary": "Get volume detail",
+        "description": "Retrieve a specific volume by its number with nested issues.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "volumeNumber",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Volume detail with issues"
+          },
+          "404": {
+            "description": "Volume not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/issues": {
+      "get": {
+        "tags": [
+          "Issues"
+        ],
+        "summary": "List issues",
+        "description": "Get all issues for a journal with optional volume filtering.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by volume number"
+            },
+            "required": false,
+            "description": "Filter by volume number",
+            "name": "volumeNumber",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of issues"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/issues/current": {
+      "get": {
+        "tags": [
+          "Issues"
+        ],
+        "summary": "Get current issue",
+        "description": "Retrieve the currently highlighted issue if configured.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Current issue or null"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/issues/forthcoming": {
+      "get": {
+        "tags": [
+          "Issues"
+        ],
+        "summary": "Get forthcoming issue",
+        "description": "Retrieve the forthcoming issue announcement.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Forthcoming issue data or null"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/issues/{volumeNumber}/{issueNumber}": {
+      "get": {
+        "tags": [
+          "Issues"
+        ],
+        "summary": "Get issue detail",
+        "description": "Retrieve a specific issue with all its publications.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "volumeNumber",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "issueNumber",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Issue detail with publications"
+          },
+          "404": {
+            "description": "Issue not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications": {
+      "get": {
+        "tags": [
+          "Publications"
+        ],
+        "summary": "List publications",
+        "description": "Retrieve publications with filtering, search, and pagination. The country filter matches any author affiliation — a publication is included if any of its authors (not just the corresponding author) has an affiliation in the specified country.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "volumeNumber",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "issueNumber",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PUBLISHED",
+                "ARCHIVED",
+                "DRAFT"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Article type filter"
+            },
+            "required": false,
+            "description": "Article type filter",
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "\"true\" to filter featured only"
+            },
+            "required": false,
+            "description": "\"true\" to filter featured only",
+            "name": "featured",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Search title, abstract, authors, keywords"
+            },
+            "required": false,
+            "description": "Search title, abstract, authors, keywords",
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated author IDs"
+            },
+            "required": false,
+            "description": "Comma-separated author IDs",
+            "name": "authors",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated keyword IDs"
+            },
+            "required": false,
+            "description": "Comma-separated keyword IDs",
+            "name": "keywords",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated country names. Matches publications where any author has an affiliation in the specified country. Case-insensitive partial match (e.g. \"Germ\" matches \"Germany\")."
+            },
+            "required": false,
+            "description": "Comma-separated country names. Matches publications where any author has an affiliation in the specified country. Case-insensitive partial match (e.g. \"Germ\" matches \"Germany\").",
+            "name": "country",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by published date from (ISO 8601, e.g. 2026-02-08)",
+              "example": "2026-02-08"
+            },
+            "required": false,
+            "description": "Filter by published date from (ISO 8601, e.g. 2026-02-08)",
+            "name": "dateFrom",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by published date to (ISO 8601, e.g. 2026-05-08)",
+              "example": "2026-05-08"
+            },
+            "required": false,
+            "description": "Filter by published date to (ISO 8601, e.g. 2026-05-08)",
+            "name": "dateTo",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "1"
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "20"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of publications"
+          },
+          "400": {
+            "description": "Invalid date format"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications/most-read": {
+      "get": {
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Most read publications",
+        "description": "Top publications by view count.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "default": "10"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PUBLISHED",
+                "ARCHIVED",
+                "DRAFT"
+              ],
+              "default": "PUBLISHED"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of most read publications"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications/most-downloaded": {
+      "get": {
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Most downloaded publications",
+        "description": "Top publications by download count.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "default": "10"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PUBLISHED",
+                "ARCHIVED",
+                "DRAFT"
+              ],
+              "default": "PUBLISHED"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of most downloaded publications"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications/most-cited": {
+      "get": {
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Most cited publications",
+        "description": "Top publications by citation count.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "default": "10"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PUBLISHED",
+                "ARCHIVED",
+                "DRAFT"
+              ],
+              "default": "PUBLISHED"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of most cited publications"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications/draft": {
+      "get": {
+        "tags": [
+          "Publications"
+        ],
+        "summary": "List draft publications",
+        "description": "Retrieve draft publications for the journal. Requires authentication and PUBLICATIONS VIEW permission.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Search title, abstract, authors, keywords"
+            },
+            "required": false,
+            "description": "Search title, abstract, authors, keywords",
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Article type filter"
+            },
+            "required": false,
+            "description": "Article type filter",
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "1"
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "20"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of draft publications"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications/legacy-resolve": {
+      "get": {
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Resolve a legacy URL to a publication",
+        "description": "Look up a publication by its legacy URL. Only returns results where redirectEnabled is true. Used for 301-redirect URL migration from legacy publishing platforms.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The legacy URL path to resolve",
+              "example": "/10/3390/jmstest101"
+            },
+            "required": true,
+            "description": "The legacy URL path to resolve",
+            "name": "legacyUrl",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Publication found"
+          },
+          "404": {
+            "description": "No publication matches the legacy URL"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications/{manuscriptId}": {
+      "get": {
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Get publication detail",
+        "description": "Retrieve a full publication by manuscript ID. Does not increment view count — use the track-view endpoint for that.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "manuscriptId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Publication detail"
+          },
+          "404": {
+            "description": "Publication not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications/{manuscriptId}/download": {
+      "get": {
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Download publication PDF",
+        "description": "Redirects to the PDF URL. Use track-download endpoint to record download metrics.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "manuscriptId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to PDF"
+          },
+          "404": {
+            "description": "Publication or PDF not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications/{manuscriptId}/track-view": {
+      "post": {
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Track publication view",
+        "description": "Increment the view count for a publication. Requires authentication.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "manuscriptId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "description": "Optional geo/referrer/userAgent data captured by the frontend. When provided, these values are used instead of server-side header extraction.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "country": {
+                    "type": "string",
+                    "maxLength": 3,
+                    "description": "ISO 3166-1 alpha-2 country code from Cloudflare cf-ipcountry header, captured by the frontend.",
+                    "example": "BD"
+                  },
+                  "city": {
+                    "type": "string",
+                    "maxLength": 256,
+                    "description": "City name from Cloudflare cf-ipcity header, captured by the frontend.",
+                    "example": "Dhaka"
+                  },
+                  "referrer": {
+                    "type": "string",
+                    "maxLength": 2048,
+                    "description": "End-user document.referrer, captured by the frontend. When the API is called indirectly, the server-side referer header reflects the frontend origin, not the real traffic source."
+                  },
+                  "userAgent": {
+                    "type": "string",
+                    "maxLength": 512,
+                    "description": "End-user navigator.userAgent, captured by the frontend. Used for bot detection and device classification."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "View tracked"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Publication not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications/{manuscriptId}/track-download": {
+      "post": {
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Track publication download",
+        "description": "Increment the download count for a publication. Requires authentication.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "manuscriptId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "description": "Optional geo/referrer/userAgent data captured by the frontend. When provided, these values are used instead of server-side header extraction.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "country": {
+                    "type": "string",
+                    "maxLength": 3,
+                    "description": "ISO 3166-1 alpha-2 country code from Cloudflare cf-ipcountry header, captured by the frontend.",
+                    "example": "BD"
+                  },
+                  "city": {
+                    "type": "string",
+                    "maxLength": 256,
+                    "description": "City name from Cloudflare cf-ipcity header, captured by the frontend.",
+                    "example": "Dhaka"
+                  },
+                  "referrer": {
+                    "type": "string",
+                    "maxLength": 2048,
+                    "description": "End-user document.referrer, captured by the frontend. When the API is called indirectly, the server-side referer header reflects the frontend origin, not the real traffic source."
+                  },
+                  "userAgent": {
+                    "type": "string",
+                    "maxLength": 512,
+                    "description": "End-user navigator.userAgent, captured by the frontend. Used for bot detection and device classification."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Download tracked"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Publication not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications/{manuscriptId}/analytics": {
+      "get": {
+        "tags": [
+          "Publication Analytics"
+        ],
+        "summary": "Get publication analytics stats",
+        "description": "Total views, downloads, unique visitors, and breakdowns for a publication.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "manuscriptId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "24h",
+                "7d",
+                "30d",
+                "90d",
+                "365d",
+                "1y",
+                "all"
+              ],
+              "default": "30d"
+            },
+            "required": false,
+            "name": "period",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics stats"
+          },
+          "404": {
+            "description": "Publication not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications/{manuscriptId}/analytics/timeline": {
+      "get": {
+        "tags": [
+          "Publication Analytics"
+        ],
+        "summary": "Get views/downloads timeline",
+        "description": "Time-series data for views and downloads over a period.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "manuscriptId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "7d",
+                "30d",
+                "90d",
+                "365d",
+                "1y",
+                "all"
+              ],
+              "default": "30d"
+            },
+            "required": false,
+            "name": "period",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Timeline data"
+          },
+          "404": {
+            "description": "Publication not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications/{manuscriptId}/analytics/breakdown": {
+      "get": {
+        "tags": [
+          "Publication Analytics"
+        ],
+        "summary": "Get metric breakdown",
+        "description": "Breakdown by country, source, or device.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "manuscriptId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "7d",
+                "30d",
+                "90d",
+                "365d",
+                "1y",
+                "all"
+              ],
+              "default": "30d"
+            },
+            "required": false,
+            "name": "period",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "country",
+                "source",
+                "device"
+              ],
+              "default": "country"
+            },
+            "required": false,
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "views",
+                "downloads"
+              ],
+              "default": "views"
+            },
+            "required": false,
+            "name": "metric",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Breakdown data"
+          },
+          "404": {
+            "description": "Publication not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/publications/{manuscriptId}/citing-works": {
+      "get": {
+        "tags": [
+          "Publications"
+        ],
+        "summary": "Get citing works",
+        "description": "Returns papers that cite this publication, sourced from OpenAlex and cached in the database. Returns up to 50 items ordered by publication date descending.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "manuscriptId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "50"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of citing works with citation summary"
+          },
+          "404": {
+            "description": "Publication not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/members": {
+      "get": {
+        "tags": [
+          "Members"
+        ],
+        "summary": "List editorial members",
+        "description": "Get all editorial board members for a journal with optional role and search filtering. Excludes the heavy `details` field — use the detail endpoint for that.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by role"
+            },
+            "required": false,
+            "description": "Filter by role",
+            "name": "role",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Search by name or email"
+            },
+            "required": false,
+            "description": "Search by name or email",
+            "name": "search",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of members"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/members/{id}": {
+      "get": {
+        "tags": [
+          "Members"
+        ],
+        "summary": "Get member detail",
+        "description": "Retrieve a specific editorial member with their associated issues, publications, and full details.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member detail"
+          },
+          "404": {
+            "description": "Member not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/special-issues": {
+      "get": {
+        "tags": [
+          "Special Issues"
+        ],
+        "summary": "List special issues",
+        "description": "Get all special issues for a journal with optional status and search filtering.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "OPEN",
+                "CLOSED",
+                "DRAFT"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by special issue section ID"
+            },
+            "required": false,
+            "description": "Filter by special issue section ID",
+            "name": "sectionId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of special issues"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/special-issues/sections": {
+      "get": {
+        "tags": [
+          "Special Issues"
+        ],
+        "summary": "List special issue sections",
+        "description": "Get all special issue sections/categories for a journal.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "List of sections"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/special-issues/{id}": {
+      "get": {
+        "tags": [
+          "Special Issues"
+        ],
+        "summary": "Get special issue detail",
+        "description": "Retrieve a specific special issue with editors, publications, and CFP details.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Special issue detail"
+          },
+          "404": {
+            "description": "Special issue not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/special-issues/{id}/track-view": {
+      "post": {
+        "tags": [
+          "Special Issues"
+        ],
+        "summary": "Track special issue view",
+        "description": "Increment the view count for a special issue.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "View tracked"
+          },
+          "404": {
+            "description": "Special issue not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/pages": {
+      "get": {
+        "tags": [
+          "Pages"
+        ],
+        "summary": "List pages",
+        "description": "Get all pages for a journal with optional filters.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PUBLISHED",
+                "DRAFT"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by navigation position"
+            },
+            "required": false,
+            "description": "Filter by navigation position",
+            "name": "navPosition",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by page route"
+            },
+            "required": false,
+            "description": "Filter by page route",
+            "name": "pageRoute",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of pages"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/pages/{slug}": {
+      "get": {
+        "tags": [
+          "Pages"
+        ],
+        "summary": "Get page by slug",
+        "description": "Retrieve a specific page by its slug.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page detail"
+          },
+          "404": {
+            "description": "Page not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/news": {
+      "get": {
+        "tags": [
+          "News"
+        ],
+        "summary": "List news",
+        "description": "Get news articles for a journal.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PUBLISHED",
+                "DRAFT",
+                "ARCHIVED"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "10"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of news articles"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/news/{slug}": {
+      "get": {
+        "tags": [
+          "News"
+        ],
+        "summary": "Get news detail",
+        "description": "Retrieve a single news article by slug.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "News detail"
+          },
+          "404": {
+            "description": "News not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/homepage": {
+      "get": {
+        "tags": [
+          "Journal Info"
+        ],
+        "summary": "Get homepage data",
+        "description": "Single endpoint for the journal landing page — about info, stats, members, recent/top publications, and last 10 issues.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Homepage data"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/about": {
+      "get": {
+        "tags": [
+          "Journal Info"
+        ],
+        "summary": "Get about information",
+        "description": "Retrieve journal metadata, metrics, contact info, and license defaults.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "About data or null"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/indexing": {
+      "get": {
+        "tags": [
+          "Journal Info"
+        ],
+        "summary": "Get indexing services",
+        "description": "Retrieve the indexing services configured for the journal.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "List of indexing services"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/quicklinks": {
+      "get": {
+        "tags": [
+          "Journal Info"
+        ],
+        "summary": "Get quick links",
+        "description": "Retrieve the quick links configured for the journal navigation.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "List of quick links"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/keywords": {
+      "get": {
+        "tags": [
+          "Keywords"
+        ],
+        "summary": "List keywords",
+        "description": "Get keywords used in publications for this journal, with optional search.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "50"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of keywords"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/authors": {
+      "get": {
+        "tags": [
+          "Authors"
+        ],
+        "summary": "List authors",
+        "description": "Get authors who have publications in this journal, with search and pagination.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "1"
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "20"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of authors"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/stats": {
+      "get": {
+        "tags": [
+          "Journal Info"
+        ],
+        "summary": "Get journal statistics",
+        "description": "Retrieve aggregated statistics for a journal.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Journal statistics"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/statistics": {
+      "get": {
+        "tags": [
+          "Journal Statistics"
+        ],
+        "summary": "Get journal statistics",
+        "description": "Returns all journal statistics in one request: journal metadata, annual metric records, pre-computed snapshot (chart-ready arrays), and live computed metrics.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Full journal statistics response"
+          },
+          "404": {
+            "description": "Journal not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/statistics/metrics": {
+      "get": {
+        "tags": [
+          "Journal Statistics"
+        ],
+        "summary": "List annual metric records",
+        "description": "Returns all manually-entered annual bibliometric records ordered newest first.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "List of metric records"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/article-types": {
+      "get": {
+        "tags": [
+          "Journal Config"
+        ],
+        "summary": "List article types",
+        "description": "Get the custom article types configured for this journal.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "List of article types"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/journals/{journalSlug}/member-roles": {
+      "get": {
+        "tags": [
+          "Journal Config"
+        ],
+        "summary": "List member roles",
+        "description": "Get the custom editorial member roles configured for this journal.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "List of member roles"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/publisher": {
+      "get": {
+        "tags": [
+          "Publisher"
+        ],
+        "summary": "Get publisher info",
+        "description": "Retrieve public publisher information, about content, and social links. Excludes infrastructure secrets.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Publisher info"
+          },
+          "404": {
+            "description": "Publisher not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/publisher/news": {
+      "get": {
+        "tags": [
+          "Publisher News"
+        ],
+        "summary": "List publisher news",
+        "description": "Get publisher-level news with filtering and pagination.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "GENERAL",
+                "ANNOUNCEMENT",
+                "OBITUARY",
+                "AWARD",
+                "RESEARCH",
+                "PUBLICATION"
+              ]
+            },
+            "required": false,
+            "name": "category",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "PUBLISHED",
+                "ARCHIVED"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by tag slug"
+            },
+            "required": false,
+            "description": "Filter by tag slug",
+            "name": "tag",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "1"
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "20"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of publisher news"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/publisher/news/{slug}": {
+      "get": {
+        "tags": [
+          "Publisher News"
+        ],
+        "summary": "Get publisher news detail",
+        "description": "Retrieve a single publisher news article by slug.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "News detail"
+          },
+          "404": {
+            "description": "News not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/publisher/events": {
+      "get": {
+        "tags": [
+          "Publisher Events"
+        ],
+        "summary": "List publisher events",
+        "description": "Get publisher events with filtering and pagination.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "WORKSHOP",
+                "SEMINAR",
+                "WEBINAR",
+                "CONFERENCE",
+                "SYMPOSIUM",
+                "ANNUAL_CONFERENCE"
+              ]
+            },
+            "required": false,
+            "name": "eventType",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "UPCOMING",
+                "ONGOING",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "1"
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "20"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of events"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/publisher/events/{slug}": {
+      "get": {
+        "tags": [
+          "Publisher Events"
+        ],
+        "summary": "Get event detail",
+        "description": "Retrieve a single publisher event with all related data (sessions, speakers, sponsors, awards, outcomes).",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event detail"
+          },
+          "404": {
+            "description": "Event not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/publisher/committee": {
+      "get": {
+        "tags": [
+          "Publisher Committee"
+        ],
+        "summary": "List committee members",
+        "description": "Get publisher committee/advisory board members with optional filtering. Excludes the heavy `details` field — use the detail endpoint for that.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by role"
+            },
+            "required": false,
+            "description": "Filter by role",
+            "name": "role",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "\"true\" to filter active members only"
+            },
+            "required": false,
+            "description": "\"true\" to filter active members only",
+            "name": "active",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "\"true\" to filter featured members only"
+            },
+            "required": false,
+            "description": "\"true\" to filter featured members only",
+            "name": "featured",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of committee members"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/publisher/committee/{id}": {
+      "get": {
+        "tags": [
+          "Publisher Committee"
+        ],
+        "summary": "Get committee member detail",
+        "description": "Retrieve a single committee member with all fields including the rich-text details.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Committee member detail"
+          },
+          "404": {
+            "description": "Committee member not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
 }

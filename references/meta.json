@@ -1,7 +1,6 @@
 {
-  "version": null,
+  "version": "1.5.3",
   "sourceRepo": "hasanur-rahman079/jms-saas-publisher",
-  "sourceCommit": null,
-  "generatedAt": null,
-  "note": "Placeholder — populated by jms-saas-publisher's publish-openapi.yml workflow on its first run against main."
+  "sourceCommit": "94dc538ee664976477c1a58f7301a1906d977029",
+  "generatedAt": "2026-09-04T12:23:23Z"
 }
