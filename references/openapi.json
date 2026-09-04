@@ -1,0 +1,9 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Journal Management System API",
+    "version": "0.0.0-placeholder",
+    "description": "Placeholder spec — this file is overwritten automatically by jms-saas-publisher's publish-openapi.yml workflow on every merge to its main branch. See references/meta.json for sync status."
+  },
+  "paths": {}
+}
