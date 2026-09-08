@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Journal Management System API",
-    "version": "1.5.5",
+    "version": "1.5.6",
     "description": "A professional RESTful API for the Journal Management System SaaS platform. All journal content endpoints are scoped by journal slug: `/api/v1/journals/{journalSlug}/...`. The publications list endpoint supports a `country` filter that matches any author affiliation country (not just the corresponding author), consistent with MDPI-style multi-country attribution."
   },
   "servers": [
