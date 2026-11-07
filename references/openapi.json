@@ -395,6 +395,19 @@
           {
             "schema": {
               "type": "string",
+              "enum": [
+                "recent",
+                "citations",
+                "views"
+              ]
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
               "default": "1"
             },
             "required": false,
