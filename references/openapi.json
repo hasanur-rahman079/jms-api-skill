@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Journal Management System API",
-    "version": "1.5.9",
+    "version": "1.6.0",
     "description": "A professional RESTful API for the Journal Management System SaaS platform. All journal content endpoints are scoped by journal slug: `/api/v1/journals/{journalSlug}/...`. The publications list endpoint supports a `country` filter that matches any author affiliation country (not just the corresponding author), consistent with MDPI-style multi-country attribution."
   },
   "servers": [
@@ -121,7 +121,7 @@
           "Volumes"
         ],
         "summary": "List volumes",
-        "description": "Get all volumes for a journal, ordered by year descending.",
+        "description": "Get volumes that have at least one non-draft issue, ordered by volume number descending.",
         "security": [],
         "responses": {
           "200": {
@@ -171,7 +171,7 @@
           "Issues"
         ],
         "summary": "List issues",
-        "description": "Get all issues for a journal with optional volume filtering.",
+        "description": "Get non-draft issues for a journal, newest first, with optional volume filtering.",
         "security": [],
         "parameters": [
           {
@@ -1115,6 +1115,16 @@
             "description": "Search by name or email",
             "name": "search",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by ISO 3166-1 alpha-2 country code, e.g. BD"
+            },
+            "required": false,
+            "description": "Filter by ISO 3166-1 alpha-2 country code, e.g. BD",
+            "name": "country",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1390,36 +1400,49 @@
           "News"
         ],
         "summary": "List news",
-        "description": "Get news articles for a journal.",
+        "description": "Published news for a journal, newest first, paginated. Search and scope are applied before counting, so `pagination.total` is exact.",
         "security": [],
         "parameters": [
           {
             "schema": {
               "type": "string",
               "enum": [
-                "PUBLISHED",
-                "DRAFT",
-                "ARCHIVED"
-              ]
+                "PUBLISHED"
+              ],
+              "description": "Accepted for compatibility; only published news is returned"
             },
             "required": false,
+            "description": "Accepted for compatibility; only published news is returned",
             "name": "status",
             "in": "query"
           },
           {
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Search title and content"
             },
             "required": false,
+            "description": "Search title and content",
             "name": "search",
             "in": "query"
           },
           {
             "schema": {
               "type": "string",
-              "default": "10"
+              "default": "1"
             },
             "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "10",
+              "description": "Default 10, max 100"
+            },
+            "required": false,
+            "description": "Default 10, max 100",
             "name": "limit",
             "in": "query"
           }
