@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Journal Management System API",
-    "version": "1.6.0",
+    "version": "1.6.1",
     "description": "A professional RESTful API for the Journal Management System SaaS platform. All journal content endpoints are scoped by journal slug: `/api/v1/journals/{journalSlug}/...`. The publications list endpoint supports a `country` filter that matches any author affiliation country (not just the corresponding author), consistent with MDPI-style multi-country attribution."
   },
   "servers": [
@@ -1308,18 +1308,19 @@
           "Pages"
         ],
         "summary": "List pages",
-        "description": "Get all pages for a journal with optional filters.",
+        "description": "Published pages for a journal with optional filters.",
         "security": [],
         "parameters": [
           {
             "schema": {
               "type": "string",
               "enum": [
-                "PUBLISHED",
-                "DRAFT"
-              ]
+                "PUBLISHED"
+              ],
+              "description": "Accepted for compatibility; only published pages are returned"
             },
             "required": false,
+            "description": "Accepted for compatibility; only published pages are returned",
             "name": "status",
             "in": "query"
           },
@@ -1368,7 +1369,7 @@
           "Pages"
         ],
         "summary": "Get page by slug",
-        "description": "Retrieve a specific page by its slug.",
+        "description": "Retrieve a published page by its slug.",
         "security": [],
         "parameters": [
           {
@@ -1386,7 +1387,7 @@
             "description": "Page detail"
           },
           "404": {
-            "description": "Page not found"
+            "description": "Page not found or not published"
           },
           "500": {
             "description": "Server error"
@@ -1764,7 +1765,7 @@
           "Publisher News"
         ],
         "summary": "List publisher news",
-        "description": "Get publisher-level news with filtering and pagination.",
+        "description": "Published publisher-level news with filtering and pagination.",
         "security": [],
         "parameters": [
           {
@@ -1787,12 +1788,12 @@
             "schema": {
               "type": "string",
               "enum": [
-                "DRAFT",
-                "PUBLISHED",
-                "ARCHIVED"
-              ]
+                "PUBLISHED"
+              ],
+              "description": "Accepted for compatibility; only published news is returned"
             },
             "required": false,
+            "description": "Accepted for compatibility; only published news is returned",
             "name": "status",
             "in": "query"
           },
@@ -1867,7 +1868,7 @@
             "description": "News detail"
           },
           "404": {
-            "description": "News not found"
+            "description": "News not found or not published"
           },
           "500": {
             "description": "Server error"
@@ -2067,6 +2068,130 @@
           },
           "404": {
             "description": "Committee member not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/publisher/pages": {
+      "get": {
+        "tags": [
+          "Publisher Pages"
+        ],
+        "summary": "List publisher pages",
+        "description": "Published publisher-wide CMS pages (no content), ordered by section, order, then title. Use `section` to build a navigation group; pass `section=` (empty) for top-level pages.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Filter by section, e.g. policies"
+            },
+            "required": false,
+            "description": "Filter by section, e.g. policies",
+            "name": "section",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "1"
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "50"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of published publisher pages"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/publisher/pages/{slug}": {
+      "get": {
+        "tags": [
+          "Publisher Pages"
+        ],
+        "summary": "Get top-level publisher page",
+        "description": "Resolves `/{slug}` — a published page with an empty section. Also accepts a page `path` URL-encoded into one segment (e.g. `%2Fpolicies%2Fpublication-ethics`).",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "contact"
+            },
+            "required": true,
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published page detail"
+          },
+          "404": {
+            "description": "Page not found or not published"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/publisher/pages/{section}/{slug}": {
+      "get": {
+        "tags": [
+          "Publisher Pages"
+        ],
+        "summary": "Get sectioned publisher page",
+        "description": "Resolves `/{section}/{slug}`, e.g. `/policies/publication-ethics`.",
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "policies"
+            },
+            "required": true,
+            "name": "section",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "publication-ethics"
+            },
+            "required": true,
+            "name": "slug",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published page detail"
+          },
+          "404": {
+            "description": "Page not found or not published"
           },
           "500": {
             "description": "Server error"
